@@ -1,5 +1,5 @@
-name: Coverage Badge
-description: Badges for test results and code coverage
+name: Generate Coverage percentage badge
+description: Generate badge with percentage of your coverage result onto your github pages
 
 # Required for publishing to the marketplace:
 # Improve your Action by adding labels for icon and color.
@@ -10,19 +10,19 @@ branding:
 runs:
   using: composite
   steps:
-    - name: Get Values
+    - name: Get values from coverage summary
       id: get-values
       shell: bash
       run: |
         COV=$(node -p 't=require(`./coverage/coverage-summary.json`).totals.percent_covered_display')
         echo "coverage=$COV" >> $GITHUB_OUTPUT
 
-    - name: Checkout gh-pages
+    - name: Checkout gh-pages branch
       uses: actions/checkout@v3
       with:
         ref: gh-pages
 
-    - name: Create Badges
+    - name: Generate badges
       shell: bash
       run: |
         npm i -g badgen-cli
@@ -31,7 +31,7 @@ runs:
         mkdir -p badges
         badgen -j coverage -s $COV% -c $COLOR > badges/coverage.svg
 
-    - name: Deploy Badges
+    - name: Commit badge into gh-pages branch
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: "Update badges [skip ci]"
@@ -41,7 +41,7 @@ runs:
     # Without this, will get Error:
     # Can't find 'action.yml', 'action.yaml' or 'Dockerfile' under '/home/runner/work/coverage-badge-action/coverage-badge-action/action.yml'.
     # Did you forget to run actions/checkout before running your local action?
-    - name: Checkout Back
+    - name: And go back to the checkout before we generated badges
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
